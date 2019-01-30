@@ -1,0 +1,20 @@
+Package: rpt
+Type: Package
+Title: R Package Template
+Version: 1.2.3
+Date: 2019-01-22
+Authors@R: c(
+    person("Boris", "Steipe", email = "boris.steipe@utoronto.ca", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1134-6758"))
+    )
+Description: A template for an RStudio project of a basic R package with a
+             GitHub repository. rpt follows principles described in
+             Hadley Wickham's R Packages book and is compatible with CRAN
+             guidelines. The project is version controlled, contains testing
+             code, can be installed from GitHub using standard tools, and 
+             includes extensive instructions on how to install and customize.
+License: file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests:
+    testthat
+RoxygenNote: 6.1.1

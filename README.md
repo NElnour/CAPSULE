@@ -1,2 +1,3 @@
-# capsule
-Cell Atlas Protein SUbcellular LocalE
+# `CAPSULE: Cell Atlas Protein SUbcellular LocalE`
+
+<!-- END -->
