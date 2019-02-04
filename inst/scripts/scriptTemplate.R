@@ -99,9 +99,8 @@ if (requireNamespace("stringr", quietly=TRUE)) {
 if (! requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
 }
-if (! requireNamespace("biomaRt", quietly = TRUE)) {
-  BiocManager::install("biomaRt")
-}
+BiocManager::install("biomaRt", version = "3.8")
+library(biomaRt)
 
 # ====  FUNCTIONS  =============================================================
 
@@ -198,32 +197,42 @@ parseHPADataL <- function(filepath, reliability = "all") {
   return(result)
 }
 
-getHGNCRefs <- function() {
-  # Purpose: Parse Human Protein Atlas XML file into a dataframe of reliability scores
-  #     Describe ...
-  # Parameters:
-  #     filepath: full path reference to XML file
-  # Value:
-  #     result: A dataframe wth gene names, and their reliability scores
-  
-  # code ...
-  
-  
-  dataRefs <- read.delim("./inst/extdata/HGNC.txt")
-  dataRefs <- dataRefs[!grepl("entry withdrawn", dataRefs$Approved.name), ]
-  withdrawnSymbols <- data.frame(Old=character(), New=character(), idx = numeric())
-  
-  for (idx in grep("withdrawn", dataRefs$Approved.symbol)){
-    toAdd <- data.frame(str_extract(dataRefs$Approved.symbol[idx], ".*[^~withdrawn]"), word(dataRefs$Approved.name[idx], -1), idx)
-    withdrawnSymbols <- rbind(withdrawnSymbols, toAdd)
-    gsub("~withdrawn", "", dataRefs$Approved.symbol[idx])
-  }
-  rownames(dataRefs) <- dataRefs$Approved.symbol
-  
-  results <- list("withdrawnSymbols" = withdrawnSymbols, "HGNCData" = dataRefs)
-  return(results)
-}
+# getHGNCRefs <- function() {
+#   # Purpose: Parse Human Protein Atlas XML file into a dataframe of reliability scores
+#   #     Describe ...
+#   # Parameters:
+#   #     filepath: full path reference to XML file
+#   # Value:
+#   #     result: A dataframe wth gene names, and their reliability scores
+#   
+#   # code ...
+#   
+#   
+#   dataRefs <- read.delim("./inst/extdata/HGNC.txt")
+#   dataRefs <- dataRefs[!grepl("entry withdrawn", dataRefs$Approved.name), ]
+#   withdrawnSymbols <- data.frame(Old=character(), New=character(), idx = numeric())
+#   
+#   for (idx in grep("withdrawn", dataRefs$Approved.symbol)){
+#     toAdd <- data.frame(str_extract(dataRefs$Approved.symbol[idx], ".*[^~withdrawn]"), word(dataRefs$Approved.name[idx], -1), idx)
+#     withdrawnSymbols <- rbind(withdrawnSymbols, toAdd)
+#     gsub("~withdrawn", "", dataRefs$Approved.symbol[idx])
+#   }
+#   rownames(dataRefs) <- dataRefs$Approved.symbol
+#   
+#   results <- list("withdrawnSymbols" = withdrawnSymbols, "HGNCData" = dataRefs)
+#   return(results)
+# }
 
+getHGNCRefs <- function(gene_id){
+  human <- searchDatasets(mart = ensembl, pattern = "hsapiens")
+  att <- c("ensembl_gene_id", "hgnc_symbol", "hgnc_trans_name", "external_gene_name", "chromosome_name", "refseq_peptide")
+  dataRefs <- getBM(attributes = att, mart = useMart("ensembl", human$dataset),
+        filters = "ensembl_gene_id",
+        values = data$Gene)
+  
+  dataRefs <- dataRefs[!duplicated(dataRefs$ensembl_gene_id), ]
+  return(dataRefs)
+}
 # ====  PROCESS  ===============================================================
 # Enter the step-by-step process of your project here. Strive to write your
 # code so that you can simply run this entire block and re-create all
