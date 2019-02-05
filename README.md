@@ -6,6 +6,7 @@ The cellular Human Protein Atlas (HPA)is a database of protein spatio-temporal l
 * correlation with RNA expression;
 * literature support's consistency;
 * ?? 
+
 Localization annotation relies mainly on antibody-based immunofluorescence confocal microscopy with the following possible annotations:
 * nuclear membrane;
 * nucleoli;
@@ -41,18 +42,18 @@ CAPSULE is an R package to parse and visualize HPA cell data. It has the followi
 * grImport 0.9-1.1; and
 * rsvg 1.3.
 
-To prepare for data analysis, download and extract [subcellular_location.tsv.zip](https://www.proteinatlas.org/download/subcellular_location.tsv.zip) in a sister folder called data. This is a tab-delimited file with the following parameters:
-1. '''Gene''': Ensembl 88.38 gene identifier based on the GRCh38.p12 human genome assembly (GCA_000001405.27). The GRCh38.p12 was last updated and patched in January 2017.
-2. '''Gene name''': common name of the gene given the Ensembl gene identifier.
-3. '''Reliability''': gene reliability score:
- + '''Enhanced''': enhanced locations; 1+ antibodies validate the location without contradiction.
- + '''Supported''': supported locations; reported in the literature but not at the level of enhanced validation.
- + '''Approved''': approved locations; protein's localization was detected using only one antibody without additional validation.
- + '''Uncertain''': uncertain locations; inconclusive evidence: no RNA expression detected or contradiction between antibody-stains and experimental data.
-4. '''Single-cell variation intensity''': variation in protein intensity at the single-cell expression level (as detected via indirect immunofluorescence staining);
-5. '''Single-cell variation spatial''': variation in the spatial distribution of the protein (detected via indirect immunofluorescence staining)
-6. '''Cell cycle dependency''':locations with observed cell cycle dependency 
-7. '''GO id''': gene ontology cellular component term identifier
+To prepare for data analysis, download and extract [subcellular_location.tsv.zip](https://www.proteinatlas.org/download/subcellular_location.tsv.zip) in a sister folder called **data**. This is a tab-delimited file with the following parameters:
+1. **Gene**: Ensembl 88.38 gene identifier based on the GRCh38.p12 human genome assembly (GCA_000001405.27). The GRCh38.p12 was last updated and patched in January 2017.
+2. **Gene name**: common name of the gene given the Ensembl gene identifier.
+3. **Reliability**: gene reliability score:
+ + **Enhanced**: enhanced locations; 1+ antibodies validate the location without contradiction.
+ + **Supported**: supported locations; reported in the literature but not at the level of enhanced validation.
+ + **Approved**: approved locations; protein's localization was detected using only one antibody without additional validation.
+ + **Uncertain**: uncertain locations; inconclusive evidence: no RNA expression detected or contradiction between antibody-stains and experimental data.
+4. **Single-cell variation intensity**: variation in protein intensity at the single-cell expression level (as detected via indirect immunofluorescence staining);
+5. **Single-cell variation spatial**: variation in the spatial distribution of the protein (detected via indirect immunofluorescence staining)
+6. **Cell cycle dependency**:locations with observed cell cycle dependency 
+7. **GO id**: gene ontology cellular component term identifier
 
 ## Read Sample HPA Data
 
