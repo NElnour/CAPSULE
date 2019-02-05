@@ -8,35 +8,14 @@
 #
 # Input:
 # Output:
-# Dependencies:
-#
-# ToDo:
-# Notes:
-#
+# Dependencies: XML 3.98-1.16; stringr 1.3.1; tibble 2.0.1; biomaRt 2.38.0; grImport 0.9-1.1; rsvg 1.3
 # ==============================================================================
-
-# Keep only one of the two notices below, and then remove this line.
-
-# WARNING: SIDE EFFECTS
-# Executing this script will execute code it contains.
 
 # NO SIDE EFFECTS:
 # This script can be safely source()'d to define the functions it contains and
 # install.packages()/run library() as required.
 # All other code will not be executed unless this is done interactively.
 
-
-
-
-# Use setwd() with discretion - it should normally not be necessary to change
-# the working directory, and it is poor practice since it changes the global
-# state. If you must use setwd(), save the current working directory and restore
-# it when your script is done, as per the example code below.
-#
-# oldWD <- getwd()
-# setwd("<your/project/directory>")
-#
-# setwd(oldWD)   # <--- move this to the end of your script
 
 # ====  PARAMETERS  ============================================================
 # Define and explain all parameters. No "magic numbers" in your code below.
@@ -54,33 +33,11 @@ if (FALSE) { # <--- Keep this guard-block only if your script needs to be
   #      remove this guard block, and the others in this script as
   #      required.
   
-  
-  
-  
 }
-
 
 
 # ====  PACKAGES  ==============================================================
 # Load all required packages.
-
-if (requireNamespace("seqinr", quietly=TRUE)) {
-  library("seqinr")
-} else {
-  install.packages("seqinr")
-  library(seqinr)
-}
-# Package information:
-#  library(help = seqinr)       # basic information
-#  browseVignettes("seqinr")    # available vignettes
-#  data(package = "seqinr")     # available datasets
-
-if (requireNamespace("xml2", quietly=TRUE)) {
-  library("xml2")
-} else {
-  install.packages("xml2")
-  library(xml2)
-}
 
 if (requireNamespace("tibble", quietly=TRUE)) {
   library("tibble")
@@ -98,52 +55,74 @@ if (requireNamespace("stringr", quietly=TRUE)) {
 
 if (! requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
+  BiocManager::install("biomaRt", version = "3.8")
 }
-BiocManager::install("biomaRt", version = "3.8")
 library(biomaRt)
 
 # ====  FUNCTIONS  =============================================================
 
-# Define functions or source external files
-if (FALSE) { # <---- If your script needs to be side-effect proof, source
-  #       only scripts that are themselves side-effect proof or
-  #       keep this guard block in place.
+mapColors <- function(cell_picture){
+  # Purpose: Maps color HEX codes in <cell_picture> to subcelular loci
+  # Parameters:
+  #     cell_picture: A Picture class object of the cell
+  # Value:
+  #     result: A dataframe mapping the specifying which HEX color code
+  #             stands for which subcellular component 
   
-  source("<myUtilityFunctionsScript.R>")
+  allPaths <- explodePaths(cell_picture)
+  colorCodes <- data.frame(RGB = character())
   
+  for (paths in allPaths@paths){
+    colorCodes <- rbind(colorCodes, data.frame(RGB=paths@rgb))
+  }
+  
+  colorCodes <- unique(colorCodes)
+  
+  colorCodes <- cbind(colorCodes, data.frame(Loci = c("Cytosol",
+                                                      "Cytosol",
+                                                      "Actin",
+                                                      "Intermediate filaments",
+                                                      "Outline",
+                                                      "Actin",
+                                                      "Actin",
+                                                      "Actin",
+                                                      "Actin",
+                                                      # "Nuclear membrane",
+                                                      "Microtubule organizing center",
+                                                      "Centrosome",
+                                                      "Microtubules",
+                                                      "Microtubules",
+                                                      "Lipid droplets",
+                                                      "Lysosomes",
+                                                      "Peroxisomes",
+                                                      "Endosomes",
+                                                      "Endoplasmic reticulum",
+                                                      "Golgi apparatus",
+                                                      "Nucleoplasm",
+                                                      "Nucleus",
+                                                      "Nucleoli",
+                                                      "Nuclear speckles",
+                                                      "Nuclear bodies",
+                                                      "Nucleoli fibrillar center",
+                                                      "Rods and rings",
+                                                      "Mitochondria",
+                                                      "Mitochondria",
+                                                      "Plasma membrane",
+                                                      "Plasma membrane"
+  )))
+  
+  save(colorCodes, file = "./inst/extdata/colorCodes.RData")
 }
 
-parseHPAXML <- function(filepath) {
-  # Purpose: Parse Human Protein Atlas XML file into a dataframe of reliability scores
-  #     Describe ...
+parseHPAData <- function(filepath, reliability = "enhanced") {
+  # Purpose: Parse Human Protein Atlas TSV file into a dataframe of mapped HGNC symbols 
   # Parameters:
-  #     filepath: full path reference to XML file
+  #     filepath: full path reference to TSV file
+  #     reliability: reliability score category for filtration; one of: "enhanced", "approved", "uncertain", or "supported".
   # Value:
-  #     result: A dataframe wth gene names, and their reliability scores
+  #     result: A dataframe wth gene names, ENSEMBL IDs, NCBI Refseq IDs, localization information, GO IDs, HGNC symbols, and chromosome loci
   
-  # code ...
-  
-  data <- read_xml("./inst/extdata/proteinatlas.xml")
-  
-  return(result)
-}
-
-parseHPADataL <- function(filepath, reliability = "all") {
-  # Purpose: Parse Human Protein Atlas XML file into a dataframe of reliability scores
-  #     Describe ...
-  # Parameters:
-  #     filepath: full path reference to XML file
-  # Value:
-  #     result: A dataframe wth gene names, and their reliability scores
-  
-  # code ...
-  
-  data <- read.delim("./inst/extdata/subcellular_location.tsv")
-  data <- data[!duplicated(data$Gene.name), ]
-  rownames(data) <- data$Gene.name
-  
-  HGNC <- getHGNCRefs()$HGNCData
-  withdrawnSymbols <- getHGNCRefs()$withdrawnSymbols
+  data <- read.delim(filepath)
   
   if (reliability == "enhanced"){
     data <- data[data$Reliability == "Enhanced", ]
@@ -165,90 +144,126 @@ parseHPADataL <- function(filepath, reliability = "all") {
     toDelete <- c("Reliability", "Supported", "Approved", "Enhanced")
     data <- data[, !(colnames(data) %in% toDelete), drop=FALSE]
   }
+  toAdd <- getHGNCRefs(data$Gene)
   
-  # select all HGNC columns whose rows match with the gene names already in data
-  approvedSelection <- HGNC[HGNC$Approved.symbol %in% data$Gene.name, ]
-  # if there are no matches between data gene symbols and HGNC approved symbols, check if HPA is using an HGNC synonym
-  synonymousSelection <- HGNC[HGNC$Synonyms %in% data$Gene.name,]
-  # check if there are sybols in data not in HGNC
-  # data$Gene.name[!(data$Gene.name %in% toAdd$Approved.symbol)]
-  # if there are no matches between approved and synonymous symbols, check if HPA is using a withdrawn symbol
-  withdrawnSelection <- HGNC[withdrawnSymbols$idx[which(withdrawnSymbols$str_extract.dataRefs.Approved.symbol.idx.........withdrawn... %in% data$Gene.name)], ]
-  # if there are no matches and the symbol is not withdrawn, check previous symbols
-  previousSelection <- HGNC[HGNC$Previous.symbols %in% data$Gene.name, ]
+  # check if there are symbols in toAdd not in data and remove them
+  if (length(data$Gene) > length(toAdd$ensembl_gene_id)){
+    diff <- data$Gene[!(data$Gene %in% toAdd$ensembl_gene_id)]
+    data <- data[!(data$Gene %in%  diff), ]
+  } else if (length(data$Gene) < length(toAdd$ensembl_gene_id)) {
+    diff <- toAdd$Approved.symbol[!(toAdd$Approved.symbol %in% data$Gene.name | 
+                                      toAdd$Previous.symbols %in% data$Gene.name | 
+                                      toAdd$Synonyms %in% data$Gene.name)]
+    toAdd <- toAdd[!(toAdd$Approved.symbol %in%  diff), ]
+  }
   
-  # Check if there are overlaps in the selections
-  previousSelection <- previousSelection[!previousSelection$Approved.symbol %in% synonymousSelection$Approved.symbol, ]
-  previousSelection <- previousSelection[!previousSelection$Approved.symbol %in% approvedSelection$Approved.symbol, ]
-  previousSelection <- previousSelection[!previousSelection$Approved.symbol %in% withdrawnSelection$Approved.symbol, ]
-  
-  synonymousSelection <- synonymousSelection[!synonymousSelection$Approved.symbol %in% approvedSelection$Approved.symbol, ]
-  synonymousSelection <- synonymousSelection[!synonymousSelection$Approved.symbol %in% withdrawnSelection$Approved.symbol, ]
-  
-  withdrawnSelection <- withdrawnSelection[!(withdrawnSelection$Approved.symbol %in% approvedSelection$Approved.symbol), ]
-  
-  toAdd <- rbind(previousSelection, synonymousSelection, withdrawnSelection, approvedSelection)
-  
-  # check if there are symbbbols in toAdd not in data and remove them
-  diff <- toAdd$Approved.symbol[!(toAdd$Approved.symbol %in% data$Gene.name | toAdd$Previous.symbols %in% data$Gene.name | toAdd$Synonyms %in% data$Gene.name)]
-  toAdd <- toAdd[!(toAdd$Approved.symbol %in%  diff), ]
-  
-  add_column(data, toAdd, .after = data$Gene.name)
-  return(result)
+  data <- merge(data, toAdd, by.x="Gene", by.y = "ensembl_gene_id")
+  data <- data[!duplicated(data$hgnc_symbol), ]
+  rownames(data) <- data$hgnc_symbol
+  return(data)
 }
 
-# getHGNCRefs <- function() {
-#   # Purpose: Parse Human Protein Atlas XML file into a dataframe of reliability scores
-#   #     Describe ...
-#   # Parameters:
-#   #     filepath: full path reference to XML file
-#   # Value:
-#   #     result: A dataframe wth gene names, and their reliability scores
-#   
-#   # code ...
-#   
-#   
-#   dataRefs <- read.delim("./inst/extdata/HGNC.txt")
-#   dataRefs <- dataRefs[!grepl("entry withdrawn", dataRefs$Approved.name), ]
-#   withdrawnSymbols <- data.frame(Old=character(), New=character(), idx = numeric())
-#   
-#   for (idx in grep("withdrawn", dataRefs$Approved.symbol)){
-#     toAdd <- data.frame(str_extract(dataRefs$Approved.symbol[idx], ".*[^~withdrawn]"), word(dataRefs$Approved.name[idx], -1), idx)
-#     withdrawnSymbols <- rbind(withdrawnSymbols, toAdd)
-#     gsub("~withdrawn", "", dataRefs$Approved.symbol[idx])
-#   }
-#   rownames(dataRefs) <- dataRefs$Approved.symbol
-#   
-#   results <- list("withdrawnSymbols" = withdrawnSymbols, "HGNCData" = dataRefs)
-#   return(results)
-# }
-
 getHGNCRefs <- function(gene_id){
+  # Purpose: Searches hsapien dataset in ENSEMBL biomaRt for gene names, ENSEMBL IDs, HGNC symbols, chromsome loci, 
+  #          and peptide Refseq IDs of the genes referred to by gene_id
+  # Parameters:
+  #     gene_id: list of ENSEMBL ID strings
+  # Value:
+  #     result: A dataframe wth gene names, ENSEMBL IDs, HGNC symbols, chromsome loci, and peptide Refseq IDs for the genes in gene_id
+  ensembl <- useMart(biomart = "ensembl")
   human <- searchDatasets(mart = ensembl, pattern = "hsapiens")
-  att <- c("ensembl_gene_id", "hgnc_symbol", "hgnc_trans_name", "external_gene_name", "chromosome_name", "refseq_peptide")
-  dataRefs <- getBM(attributes = att, mart = useMart("ensembl", human$dataset),
-        filters = "ensembl_gene_id",
-        values = data$Gene)
+  
+  myMart <- useMart("ensembl", human$dataset)
+  att <- c("ensembl_gene_id", "hgnc_symbol", "external_gene_name", "chromosome_name", "refseq_peptide")
+  dataRefs <- getBM(attributes = att, mart = myMart,
+                    filters = "ensembl_gene_id",
+                    values = gene_id)
   
   dataRefs <- dataRefs[!duplicated(dataRefs$ensembl_gene_id), ]
   return(dataRefs)
 }
+
+whereIs <- function(hgnc_symbol, HPASet){
+  # Purpose: Search and colour subcellular locations where protein of interest is annotated to localize
+  # Parameters:
+  #     hgnc_symbol: HGNC symbol of gene of protein of interest
+  #     HPASet: Human Protein Atlas dataset
+  # Value:
+  #     result: an image of the cel highlighted for subcellular components where protein of gene interest is annotated to localize
+  if (requireNamespace("XML", quietly=TRUE)) {
+    library("XML")
+  } else {
+    install.packages("XML")
+    library(XML)
+  }
+  
+  if (requireNamespace("grid", quietly=TRUE)) {
+    library("grid")
+  } else {
+    install.packages("grid")
+    library(grid)
+  }
+  
+  if (requireNamespace("grImport", quietly=TRUE)) {
+    library("grImport")
+  } else {
+    install.packages("grImport")
+    library(grImport)
+  }
+  
+  if (requireNamespace("rsvg", quietly=TRUE)) {
+    library("rsvg")
+  } else {
+    install.packages("rsvg")
+    library(rsvg)
+  }
+  
+  # Reference cell: provided image of the cell was obtained from Human Protein Atlas download page
+  # https://www.proteinatlas.org/images_static/cell.svg
+  rsvg_ps("./inst/extdata/cell.svg", "./inst/extdata/cell.ps")
+  PostScriptTrace("./inst/extdata/cell.ps", outfilename = "./inst/extdata/cell.xml")
+  cell <- readPicture("./inst/extdata/cell.xml")
+  
+  geneLoci <- unlist(strsplit(as.character(test[hgnc_symbol,]$Enhanced),";"))
+  
+  load("./inst/extdata/colorCodes.RData")
+  
+  toChange <- colorCodes$RGB[colorCodes$Loci %in% geneLoci]
+  
+  for (idx in 1:length(cell@paths)){
+    if (cell@paths[idx]$path@rgb %in% toChange){
+      cell@paths[idx]$path@rgb <-  stringr::str_replace(cell[loci]@paths$path@rgb, ".{7}", "#010202")
+    }
+  }
+  
+  #plot the good stuff
+  grid.picture(cell)
+}
+
 # ====  PROCESS  ===============================================================
 # Enter the step-by-step process of your project here. Strive to write your
 # code so that you can simply run this entire block and re-create all
 # intermediate results.
 if (FALSE) {
   
-  # ...
+  filepath = "../data/subcellular_location.tsv"
+  enhanced <- parseHPAData(filepath)
   
+  # What are the most commonly annotated subcellular localization sites?
+  par(las=2)
+  par(mar=c(3,15,0,1))
+  barplot(table(test$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
   
+  # Visualize a gene's protein localization information
+  whereIs("DVL2", enhanced)
+  # which localizes to 
+  unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
   
 }
 
 # ====  TESTS  =================================================================
 if (FALSE) {
   # Enter your function tests here...
-  
 }
 
 
