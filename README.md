@@ -90,7 +90,7 @@ par(las=2)
 par(mar=c(3,15,0,1))
 barplot(table(enhanced$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
 ```
-![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/inst/extdata/locDist.png)
+![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/locDist.png)
 ```
 # Visualize a gene's protein localization information
 whereIs("DVL2", enhanced)
