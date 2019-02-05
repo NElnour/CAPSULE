@@ -56,6 +56,7 @@ To prepare for data analysis, download and extract [subcellular_location.tsv.zip
 7. **GO id**: gene ontology cellular component term identifier
 
 ## Read Sample HPA Data
+In scriptTemplate.R, there are defined functions to clean, parse, and map HPA data to other data sources. We will use parseHPAData() first that takes the filepath to the TSV file as well as an optional reliability argument as parameters. The reliability parameter filters the HPA dataset by the reliability category of interest. By default, it is set to "enhanced", with other options being "approved", "supported", and "uncertain".
 
 ```R
 source("./inst/scripts/scriptTemplate.R")
@@ -81,16 +82,22 @@ RBM5           RBM5               RBM5               3      NP_005769
 FKBP4         FKBP4              FKBP4              12      NP_002005
 KDM1A         KDM1A              KDM1A               1   NP_001350583
 ```
-Here, in addition to the parameters of the HPA TSV file, **hgnc_symbol external_gene_name chromosome_name refseq_peptide** were mapped the attributes in the ENSEMBL biomaRt. This is to resolve usage of withdrawn and obsolete gene names and IDs by the HPA database.
+Here, in addition to the parameters of the HPA TSV file, **hgnc_symbol external_gene_name chromosome_name refseq_peptide** were the mapped attributes in the ENSEMBL biomaRt for each ENSEMBL ID. This is to resolve usage of withdrawn and obsolete gene names and IDs in the HPA database.
 
 ## What are the most commonly annotated subcellular localization sites?
+Working with the parsed HPA dataset is straightforard now. One can subset, index, tabulate, etc. as one would with dataframes. Note, however, that the HPA dataset stores its data as factors.
 
 ```
-par(las=2)
-par(mar=c(3,15,0,1))
-barplot(table(enhanced$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
+# break up grouped annotations to get unqiue counts
+loci <- unlist(strsplit(as.character(enhanced$Enhanced), ";"))
+
+par(las=2) #align bar labels horizonatally
+par(mar=c(4,15,0,1)) # set margins of the plot space
+barplot(table(loci), horiz = TRUE, cex.names = 0.8, cex.axis = 0.8)
 ```
 ![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/locDist.png)
+
+We can see that the most abundant localization annotation in our enhanced HPA dataset is the Nucleoplasm.
 ```
 # Visualize a gene's protein localization information
 whereIs("DVL2", enhanced)

@@ -252,7 +252,7 @@ if (FALSE) {
   # What are the most commonly annotated subcellular localization sites?
   par(las=2)
   par(mar=c(3,15,0,1))
-  barplot(table(test$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
+  barplot(table(enhanced$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
   
   # Visualize a gene's protein localization information
   whereIs("DVL2", enhanced)
