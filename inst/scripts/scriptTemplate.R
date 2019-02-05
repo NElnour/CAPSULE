@@ -224,7 +224,7 @@ whereIs <- function(hgnc_symbol, HPASet){
   PostScriptTrace("./inst/extdata/cell.ps", outfilename = "./inst/extdata/cell.xml")
   cell <- readPicture("./inst/extdata/cell.xml")
   
-  geneLoci <- unlist(strsplit(as.character(test[hgnc_symbol,]$Enhanced),";"))
+  geneLoci <- unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Enhanced),";"))
   
   load("./inst/extdata/colorCodes.RData")
   
@@ -232,7 +232,7 @@ whereIs <- function(hgnc_symbol, HPASet){
   
   for (idx in 1:length(cell@paths)){
     if (cell@paths[idx]$path@rgb %in% toChange){
-      cell@paths[idx]$path@rgb <-  stringr::str_replace(cell[loci]@paths$path@rgb, ".{7}", "#010202")
+      cell@paths[idx]$path@rgb <-  stringr::str_replace(cell[idx]@paths$path@rgb, ".{7}", "#010202")
     }
   }
   

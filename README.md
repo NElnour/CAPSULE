@@ -98,10 +98,20 @@ barplot(table(loci), horiz = TRUE, cex.names = 0.8, cex.axis = 0.8)
 ![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/locDist.png)
 
 We can see that the most abundant localization annotation in our enhanced HPA dataset is the Nucleoplasm.
+
+## Visualize Localizations
+The Human Protein Atlas also provides an SVG of their [protoypical cell](https://www.proteinatlas.org/about/download). Using Chrome download for some reason disallows recognition of this SVG as a vector graphic by **grImport** functions. In an image editor, the provided SVG was re-exported as SVG and edited in a text editor to remove whole cell masking. The final image in **inst/extdata/** is compatible with **grImport**.
+![wholeCell](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/cell.svg) 
 ```
-# Visualize a gene's protein localization information
 whereIs("DVL2", enhanced)
-# which localizes to 
+```
+![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/DVL2Loci.png) 
+
+which maps to ...
+```
 unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
+```
+```text
+[1] "Nuclear bodies" "Nucleoplasm"   
 ```
 <!-- END -->
