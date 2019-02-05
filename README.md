@@ -114,4 +114,7 @@ unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
 ```text
 [1] "Nuclear bodies" "Nucleoplasm"   
 ```
+
+## References
+Thul, F., *et al.*. (2017) A subcellular map of the human proteome. *Science* **356**(6340): eaal3321. DOI: [10.1126/science.aal3321](http://science.sciencemag.org/content/356/6340/eaal3321)
 <!-- END -->
