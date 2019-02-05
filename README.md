@@ -1,7 +1,7 @@
 # `BCB420.2019.CAPSULE: Cell Atlas Protein SUbcellular LocalE`
 
 ## The Human Protein Cell Atlas: background
-The cellular Human Protein Atlas (HPA)is a database of protein spatio-temporal localization in human cells. The localization annotations rely on manual categorization based on reliability scores. Such scores are curated to indicate the reliability of the available data from the Human Protein Atlas and UniProtKB databases, encompassing:
+The cellular Human Protein Atlas (HPA) is a database of protein spatio-temporal localization in human cells. The localization annotations rely on manual categorization based on reliability scores. Such scores are curated to indicate the reliability of the available data from the Human Protein Atlas and UniProtKB databases, encompassing:
 * reproducibility;
 * correlation with RNA expression;
 * literature support's consistency;
@@ -42,7 +42,7 @@ CAPSULE is an R package to parse and visualize HPA cell data. It has the followi
 * grImport 0.9-1.1; and
 * rsvg 1.3.
 
-To prepare for data analysis, download and extract [subcellular_location.tsv.zip](https://www.proteinatlas.org/download/subcellular_location.tsv.zip) in a sister folder called * **data** *. This is a tab-delimited file with the following parameters:
+To prepare for data analysis, download and extract [subcellular_location.tsv.zip](https://www.proteinatlas.org/download/subcellular_location.tsv.zip) (1.2Mb) in a sister folder called * **data** *. This is a tab-delimited file with the following parameters:
 1. **Gene**: Ensembl 88.38 gene identifier based on the GRCh38.p12 human genome assembly (GCA_000001405.27). The GRCh38.p12 was last updated and patched in January 2017.
 2. **Gene name**: common name of the gene given the Ensembl gene identifier.
 3. **Reliability**: gene reliability score:
