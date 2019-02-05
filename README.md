@@ -1,10 +1,4 @@
 # `BCB420.2019.CAPSULE: Cell Atlas Protein SUbcellular LocalE`
----
-title: "BCB420.2019.CAPSULE"
-author: "Nada Elnour"
-date: "February 5, 2019"
-output: html_document
----
 
 ## The Human Protein Cell Atlas: background
 The cellular Human Protein Atlas (HPA)is a database of protein spatio-temporal localization in human cells. The localization annotations rely on manual categorization based on reliability scores. Such scores are curated to indicate the reliability of the available data from the Human Protein Atlas and UniProtKB databases, encompassing:
@@ -52,10 +46,10 @@ To prepare for data analysis, download and extract [subcellular_location.tsv.zip
 1. **Gene**: Ensembl 88.38 gene identifier based on the GRCh38.p12 human genome assembly (GCA_000001405.27). The GRCh38.p12 was last updated and patched in January 2017.
 2. **Gene name**: common name of the gene given the Ensembl gene identifier.
 3. **Reliability**: gene reliability score:
-  + **Enhanced**: enhanced locations; 1+ antibodies validate the location without contradiction.
-  + **Supported**: supported locations; reported in the literature but not at the level of enhanced validation.
-  + **Approved**: approved locations; protein's localization was detected using only one antibody without additional validation.
-  + **Uncertain**: uncertain locations; inconclusive evidence: no RNA expression detected or contradiction between antibody-stains and experimental data.
+     - **Enhanced**: enhanced locations; 1+ antibodies validate the location without contradiction.
+     - **Supported**: supported locations; reported in the literature but not at the level of enhanced validation.
+     - **Approved**: approved locations; protein's localization was detected using only one antibody without additional validation.
+     - **Uncertain**: uncertain locations; inconclusive evidence: no RNA expression detected or contradiction between antibody-stains and experimental data.
 4. **Single-cell variation intensity**: variation in protein intensity at the single-cell expression level (as detected via indirect immunofluorescence staining);
 5. **Single-cell variation spatial**: variation in the spatial distribution of the protein (detected via indirect immunofluorescence staining)
 6. **Cell cycle dependency**:locations with observed cell cycle dependency 
@@ -63,20 +57,44 @@ To prepare for data analysis, download and extract [subcellular_location.tsv.zip
 
 ## Read Sample HPA Data
 
-  ```{r}
-  source("./inst/scripts/scriptTemplate.R")
+```R
+source("./inst/scripts/scriptTemplate.R")
 
-  filepath = "../data/subcellular_location.tsv"
-  enhanced <- parseHPAData(filepath)
-  
-  # What are the most commonly annotated subcellular localization sites?
-  par(las=2)
-  par(mar=c(3,15,0,1))
-  barplot(table(test$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
-  
-  # Visualize a gene's protein localization information
-  whereIs("DVL2", enhanced)
-  # which localizes to 
-  unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
-  ```
+filepath = "../data/subcellular_location.tsv"
+enhanced <- parseHPAData(filepath) # a function defined in scriptTemplate.R
+head(enhanced)
+```
+
+```text
+Gene Gene.name              Enhanced Single.cell.variation.intensity Single.cell.variation.spatial Cell.cycle.dependency                                         GO.id
+NFYA    ENSG00000001167      NFYA           Nucleoplasm                                                                                                          Nucleoplasm (GO:0005654)
+CYP51A1 ENSG00000001630   CYP51A1 Endoplasmic reticulum                                                                                                Endoplasmic reticulum (GO:0005783)
+BAD     ENSG00000002330       BAD          Mitochondria                                                                                                         Mitochondria (GO:0005739)
+RBM5    ENSG00000003756      RBM5           Nucleoplasm                                                                                                          Nucleoplasm (GO:0005654)
+FKBP4   ENSG00000004478     FKBP4   Cytosol;Nucleoplasm                                                                                     Cytosol (GO:0005829);Nucleoplasm (GO:0005654)
+KDM1A   ENSG00000004487     KDM1A           Nucleoplasm                                                                                     Cytosol (GO:0005829);Nucleoplasm (GO:0005654)
+hgnc_symbol external_gene_name chromosome_name refseq_peptide
+NFYA           NFYA               NFYA               6      NP_002496
+CYP51A1     CYP51A1            CYP51A1               7      NP_000777
+BAD             BAD                BAD              11      NP_004313
+RBM5           RBM5               RBM5               3      NP_005769
+FKBP4         FKBP4              FKBP4              12      NP_002005
+KDM1A         KDM1A              KDM1A               1   NP_001350583
+```
+Here, in addition to the parameters of the HPA TSV file, **hgnc_symbol external_gene_name chromosome_name refseq_peptide** were mapped the attributes in the ENSEMBL biomaRt. This is to resolve usage of withdrawn and obsolete gene names and IDs by the HPA database.
+
+## What are the most commonly annotated subcellular localization sites?
+
+```
+par(las=2)
+par(mar=c(3,15,0,1))
+barplot(table(enhanced$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
+```
+![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/inst/extdata/locDist.png)
+```
+# Visualize a gene's protein localization information
+whereIs("DVL2", enhanced)
+# which localizes to 
+unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
+```
 <!-- END -->
