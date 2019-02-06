@@ -143,6 +143,7 @@ parseHPAData <- function(filepath, reliability = "enhanced") {
     toDelete <- c("Reliability", "Supported", "Approved", "Enhanced")
     data <- data[, !(colnames(data) %in% toDelete), drop=FALSE]
   }
+  
   toAdd <- getHGNCRefs(data$Gene)
   
   # check if there are symbols in toAdd not in data and remove them
@@ -159,6 +160,7 @@ parseHPAData <- function(filepath, reliability = "enhanced") {
   data <- merge(data, toAdd, by.x="Gene", by.y = "ensembl_gene_id")
   data <- data[!duplicated(data$hgnc_symbol), ]
   rownames(data) <- data$hgnc_symbol
+  colnames(data)[3] <- "Loci"
   return(data)
 }
 
@@ -174,11 +176,16 @@ getHGNCRefs <- function(gene_id){
   
   myMart <- useMart("ensembl", human$dataset)
   att <- c("ensembl_gene_id", "hgnc_symbol", "external_gene_name", "chromosome_name", "refseq_peptide")
+  
   dataRefs <- getBM(attributes = att, mart = myMart,
                     filters = "ensembl_gene_id",
                     values = gene_id)
   
-  dataRefs <- dataRefs[!duplicated(dataRefs$ensembl_gene_id), ]
+  dataRefs <- rbind(dataRefs, getBM(attributes = att, mart = myMart,
+                                    filters = "hgnc_symbol",
+                                    values = gene_id))
+  
+  dataRefs <- dataRefs[!duplicated(dataRefs$hgnc_symbol), ]
   return(dataRefs)
 }
 
@@ -223,7 +230,7 @@ whereIs <- function(hgnc_symbol, HPASet){
   PostScriptTrace("./inst/extdata/cell.ps", outfilename = "./inst/extdata/cell.xml")
   cell <- readPicture("./inst/extdata/cell.xml")
   
-  geneLoci <- unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Enhanced),";"))
+  geneLoci <- getLocations(hgnc_symbol, HPASet)
   
   load("./inst/extdata/colorCodes.RData")
   
@@ -236,7 +243,21 @@ whereIs <- function(hgnc_symbol, HPASet){
   }
   
   #plot the good stuff
-  grid.picture(cell)
+  grid.picture(cell) 
+}
+
+getLocations <- function(hgnc_symbol, HPASet){
+  result <- c()
+  for(locus in HPASet$Loci){
+    if (grep(";", as.character(HPASet[hgnc_symbol,]$Loci))){
+      result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Loci),";")))
+    } else {
+      result <- cbind(result, as.character(HPASet[hgnc_symbol,]$Loci))
+    }
+  }
+  
+  result <- unique(result[!is.na(result)])
+  return(result)
 }
 
 # ====  PROCESS  ===============================================================
@@ -246,17 +267,31 @@ whereIs <- function(hgnc_symbol, HPASet){
 if (FALSE) {
   
   filepath = "../data/subcellular_location.tsv"
-  enhanced <- parseHPAData(filepath)
+  approved <- parseHPAData(filepath, "approved")
   
   # What are the most commonly annotated subcellular localization sites?
   par(las=2)
   par(mar=c(3,15,0,1))
-  barplot(table(enhanced$Enhanced), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
+  barplot(table(all$Approved), horiz = TRUE, cex.names = 0.5, cex.axis = 0.8)
   
   # Visualize a gene's protein localization information
-  whereIs("DVL2", enhanced)
-  # which localizes to 
-  unlist(strsplit(as.character(enhanced["DVL2",]$Enhanced),";"))
+  test <- c("AMBRA1", "ATG14", "ATP2A1", "ATP2A2", "ATP2A3", "BECN1", "BECN2", 
+            "BIRC6", "BLOC1S1", "BLOC1S2", "BORCS5", "BORCS6", "BORCS7", 
+            "BORCS8", "CACNA1A", "CALCOCO2", "CTTN", "DCTN1", "EPG5", "GABARAP", 
+            "GABARAPL1", "GABARAPL2", "HDAC6", "HSPB8", "INPP5E", "IRGM", 
+            "KXD1", "LAMP1", "LAMP2", "LAMP3", "LAMP5", "MAP1LC3A", "MAP1LC3B", 
+            "MAP1LC3C", "MGRN1", "MYO1C", "MYO6", "NAPA", "NSF", "OPTN", 
+            "OSBPL1A", "PI4K2A", "PIK3C3", "PLEKHM1", "PSEN1", "RAB20", "RAB21", 
+            "RAB29", "RAB34", "RAB39A", "RAB7A", "RAB7B", "RPTOR", "RUBCN", 
+            "RUBCNL", "SNAP29", "SNAP47", "SNAPIN", "SPG11", "STX17", "STX6", 
+            "SYT7", "TARDBP", "TFEB", "TGM2", "TIFA", "TMEM175", "TOM1", 
+            "TPCN1", "TPCN2", "TPPP", "TXNIP", "UVRAG", "VAMP3", "VAMP7", 
+            "VAMP8", "VAPA", "VPS11", "VPS16", "VPS18", "VPS33A", "VPS39", 
+            "VPS41", "VTI1B", "YKT6")
+  whereIs(test, approved)
+  
+  # which localize to 
+  getLocations(test, approved)
   
 }
 
