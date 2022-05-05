@@ -55,9 +55,14 @@ if (requireNamespace("stringr", quietly=TRUE)) {
 
 if (require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
+} 
+
+if (requireNamespace("biomaRt", quietly = TRUE)) {
+  library(biomaRt)
+} else {
   BiocManager::install("biomaRt")
+  library(biomaRt)
 }
-library(biomaRt)
 
 # ====  FUNCTIONS  =============================================================
 
