@@ -53,11 +53,16 @@ if (requireNamespace("stringr", quietly=TRUE)) {
   library(stringr)
 }
 
-if (! requireNamespace("BiocManager", quietly = TRUE)) {
+if (require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
-  BiocManager::install("biomaRt", version = "3.8")
+} 
+
+if (requireNamespace("biomaRt", quietly = TRUE)) {
+  library(biomaRt)
+} else {
+  BiocManager::install("biomaRt")
+  library(biomaRt)
 }
-library(biomaRt)
 
 # ====  FUNCTIONS  =============================================================
 
@@ -177,7 +182,8 @@ getHGNCRefs <- function(gene_id){
   myMart <- useMart("ensembl", human$dataset)
   att <- c("ensembl_gene_id", "hgnc_symbol", "external_gene_name", "chromosome_name", "refseq_peptide")
   
-  dataRefs <- getBM(attributes = att, mart = myMart,
+  dataRefs <- getBM(attributes = att, 
+                    mart = myMart,
                     filters = "ensembl_gene_id",
                     values = gene_id)
   
@@ -189,7 +195,7 @@ getHGNCRefs <- function(gene_id){
   return(dataRefs)
 }
 
-whereIs <- function(hgnc_symbol, HPASet){
+whereIs <- function(hgnc_symbol, HPASet, reliability){
   # Purpose: Search and colour subcellular locations where protein of interest is annotated to localize
   # Parameters:
   #     hgnc_symbol: HGNC symbol of gene of protein of interest
@@ -230,7 +236,7 @@ whereIs <- function(hgnc_symbol, HPASet){
   PostScriptTrace("./inst/extdata/cell.ps", outfilename = "./inst/extdata/cell.xml")
   cell <- readPicture("./inst/extdata/cell.xml")
   
-  geneLoci <- getLocations(hgnc_symbol, HPASet)
+  geneLoci <- getLocations(hgnc_symbol, HPASet, reliability)
   
   load("./inst/extdata/colorCodes.RData")
   
@@ -246,13 +252,13 @@ whereIs <- function(hgnc_symbol, HPASet){
   grid.picture(cell) 
 }
 
-getLocations <- function(hgnc_symbol, HPASet){
+getLocations <- function(hgnc_symbol, HPASet, reliability){
   result <- c()
   for(locus in HPASet$Loci){
-    if (grep(";", as.character(HPASet[hgnc_symbol,]$Loci))){
-      result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Loci),";")))
+    if (grep(";", as.character(HPASet[hgnc_symbol,][reliability])) > 0){
+      result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,][reliability]),";")))
     } else {
-      result <- cbind(result, as.character(HPASet[hgnc_symbol,]$Loci))
+      result <- cbind(result, as.character(HPASet[hgnc_symbol,][reliability]))
     }
   }
   
@@ -267,6 +273,7 @@ getLocations <- function(hgnc_symbol, HPASet){
 if (FALSE) {
   
   filepath = "../data/subcellular_location.tsv"
+  reliability <- "Approved"
   approved <- parseHPAData(filepath, "approved")
   
   # What are the most commonly annotated subcellular localization sites?
@@ -288,10 +295,10 @@ if (FALSE) {
             "TPCN1", "TPCN2", "TPPP", "TXNIP", "UVRAG", "VAMP3", "VAMP7", 
             "VAMP8", "VAPA", "VPS11", "VPS16", "VPS18", "VPS33A", "VPS39", 
             "VPS41", "VTI1B", "YKT6")
-  whereIs(test, approved)
+  whereIs(test, approved, reliability)
   
   # which localize to 
-  getLocations(test, approved)
+  getLocations(test, approved, reliability)
   
 }
 

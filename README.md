@@ -61,7 +61,7 @@ In scriptTemplate.R, there are defined functions to clean, parse, and map HPA da
 ```R
 source("./inst/scripts/scriptTemplate.R")
 
-filepath = "../data/subcellular_location.tsv"
+filepath = "./data/subcellular_location.tsv"
 enhanced <- parseHPAData(filepath) # a function defined in scriptTemplate.R
 head(enhanced)
 ```
@@ -103,7 +103,7 @@ We can see that the most abundant localization annotation in our enhanced HPA da
 The Human Protein Atlas also provides an SVG of their [protoypical cell](https://www.proteinatlas.org/about/download). Using Chrome download for some reason disallows recognition of this SVG as a vector graphic by **grImport** functions. In an image editor, the provided SVG was re-exported as SVG and edited in a text editor to remove whole cell masking. The final image in **inst/extdata/** is compatible with **grImport**.
 ![wholeCell](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/cell.svg) 
 ```
-whereIs("DVL2", enhanced) #will highlight cellular components in black
+whereIs("DVL2", enhanced, "Enhanced") #will highlight cellular components in black
 ```
 ![Localization Distribution](https://raw.githubusercontent.com/NElnour/capsule/master/inst/extdata/DVL2Loci.png) 
 
