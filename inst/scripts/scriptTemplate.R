@@ -255,10 +255,10 @@ whereIs <- function(hgnc_symbol, HPASet, reliability){
 getLocations <- function(hgnc_symbol, HPASet, reliability){
   result <- c()
   for(locus in HPASet$Loci){
-    if (grep(";", as.character(HPASet[hgnc_symbol,][reliability])) > 0){
+    if (length(grep(";", as.character(HPASet[hgnc_symbol,][reliability]))) > 0){
       result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,][reliability]),";")))
     } else {
-      result <- cbind(result, as.character(HPASet[hgnc_symbol,][reliability]))
+      result <- cbind(result, as.character(HPASet[hgnc_symbol,]$Loci))
     }
   }
   
