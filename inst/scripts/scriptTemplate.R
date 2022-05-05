@@ -57,13 +57,6 @@ if (require("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
 } 
 
-if (requireNamespace("biomaRt", quietly = TRUE)) {
-  library(biomaRt)
-} else {
-  BiocManager::install("biomaRt")
-  library(biomaRt)
-}
-
 # ====  FUNCTIONS  =============================================================
 
 mapColors <- function(cell_picture){
@@ -125,6 +118,12 @@ parseHPAData <- function(filepath, reliability = "enhanced") {
   #     reliability: reliability score category for filtration; one of: "enhanced", "approved", "uncertain", or "supported".
   # Value:
   #     result: A dataframe wth gene names, ENSEMBL IDs, NCBI Refseq IDs, localization information, GO IDs, HGNC symbols, and chromosome loci
+  if (requireNamespace("biomaRt", quietly = TRUE)) {
+    library(biomaRt)
+  } else {
+    BiocManager::install("biomaRt")
+    library(biomaRt)
+  }
   
   data <- read.delim(filepath)
   
@@ -254,11 +253,28 @@ whereIs <- function(hgnc_symbol, HPASet, reliability){
 
 getLocations <- function(hgnc_symbol, HPASet, reliability){
   result <- c()
+  reliability <- tolower(reliability)
+  
+  if (reliability == "enhanced"){
+    filter <- "Enhanced"
+  }
+  else if (reliability == "approved"){
+    filter <- "Approved"
+  }
+  else if (reliability == "supported"){
+    filter <- "Supported"
+  }
+  else if (reliability == "uncertain"){
+    filter <- "Uncertain"
+  }
+  
   for(locus in HPASet$Loci){
-    if (length(grep(";", as.character(HPASet[hgnc_symbol,][reliability]))) > 0){
-      result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,][reliability]),";")))
+    if (length(grep(";", as.character(HPASet[hgnc_symbol,][filter]))) > 0){
+      result <- cbind(result, unlist(strsplit(as.character(HPASet[hgnc_symbol,][filter]),";")))
     } else {
-      result <- cbind(result, as.character(HPASet[hgnc_symbol,]$Loci))
+      loci <- unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Loci),";"))
+      others <- unlist(strsplit(as.character(HPASet[hgnc_symbol,]$Additional.location),";"))
+      result <- cbind(result, loci, others)
     }
   }
   
